@@ -24,7 +24,7 @@ after_success:
   - docker build -t pdavala/multi-complex-worker ./worker
   # Login to Docker CLI. This command first fetches the $DOCKER_PASSWORD from travis-ci env vars. 
   # And it will provide it as the response (from stdin) for the next command (docker login) 
-  - echo "$DOCKER_PASSWORD" | docker Login -u "$DOCKER_ID" --password-stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # Take those images and push em into docker hub
   - docker push pdavala/multi-complex-client
   - docker push pdavala/multi-complex-nginx
