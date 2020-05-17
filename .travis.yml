@@ -31,4 +31,26 @@ after_success:
   - docker push pdavala/multi-complex-server
   - docker push pdavala/multi-complex-worker
 
+
+# Config for deploy to AWS : http://multidockercomplex-env.eba-eyew3rtr.us-east-2.elasticbeanstalk.com/
+# App entry is taken from AWS Elastic beanstalkapplication name : multi-docker-complex
+# Env is taken from AWS app's environment : MultiDockerComplex-env
+# AWS S3 bucketname
+# bucket_name is the AWS S3 bucket name for our elstic beanstalk
+# bucket_path is same as app name in AWS
+# deploy only when master branch is updated.
+# The AWS keys added to the travis project https://travis-ci.org/github/pbdavala/multi-docker/settings
+deploy:
+  provider:     elasticbeanstalk
+  region:       "us-east-2"
+  app:          "multi-docker-complex"
+  env:          "MultiDockerComplex-env"
+  bucket_name:  "elasticbeanstalk-us-east-2-236818191254"
+  bucket_path:  "multi-docker-complex"
+  on:
+    branch: master
+  access_key_id:  $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
+
+
 #End of file..
