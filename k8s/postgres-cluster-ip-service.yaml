@@ -1,0 +1,14 @@
+#Diff. apiVersions provide diff types of objects that we can use.
+apiVersion: v1
+# kind defines the object type available under that apiVersion.
+kind: Service
+metadata:
+  name: postgres-cluster-ip-service    # Name of the service (for logging)
+# Specs for the sub-types that are inside this service
+spec:   
+  type: ClusterIP   # This service is of type = ClusterIP
+  selector:
+    component: postgres  # This is the selector inside the pod for postgres-deployment
+  ports:
+  - port: 5432        # Port on which Other PODs can access the pod that we are governing access to (postgres pod via the selector)
+    targetPort: 5432  # to access the port on target pod that we providing access to (postgres POD's containerPort)

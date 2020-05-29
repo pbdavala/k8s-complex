@@ -1,0 +1,14 @@
+#Diff. apiVersions provide diff types of objects that we can use.
+apiVersion: v1
+# kind defines the object type available under that apiVersion.
+kind: Service
+metadata:
+  name: redis-cluster-ip-service    # Name of the service (for logging)
+# Specs for the sub-types that are inside this service
+spec:   
+  type: ClusterIP   # This service is of type = ClusterIP
+  selector:
+    component: redis  # This is the selector inside the pod for redis-deployment
+  ports:
+  - port: 6379        # Port on which Other PODs can access the pod that we are governing access to (redis pod via the selector)
+    targetPort: 6379  # to access the port on target pod that we providing access to (redis POD's containerPort)

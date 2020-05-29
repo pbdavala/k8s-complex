@@ -1,0 +1,26 @@
+# Note the apiVersion is apps/v1
+apiVersion: apps/v1
+#New config file of type Deployment
+kind: Deployment    
+metadata:
+  name: worker-deployment
+spec:
+  replicas: 1    # No. of distinct identical pods this deployment will create
+  selector:      # Deployment's way of id-ing the pod's published label that belong to this deployment.
+    matchLabels:
+      component: worker
+  template:     # pod-template config for every pod in this deployment
+    metadata:
+      labels:   # pod's label that is published for the sake of selector of deployment above. 
+        component: worker
+    spec:       # spec for containers in the pod which is in this deployment.
+      containers:      # list of containers that we want created with every pod controlled by this deployment.
+      - name: worker   # name of the container inside the pod
+        image: pdavala/multi-complex-worker   # image for the container inside pod.         
+        # Port  is not required because nothing connects to multi-worker image directly. No inbound only outbound. 
+        env:    # Env vars that are passed in for access to redis and postgres
+          - name: REDIS_HOST
+            value: redis-cluster-ip-service   # name of the ClusterIP Service for redis
+          - name: REDIS_PORT
+            value: '6379'   # Def. port for redis and also defined in redis-cluster-ip-service.yaml
+            

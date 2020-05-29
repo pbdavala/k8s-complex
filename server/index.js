@@ -18,11 +18,16 @@ const pgClient = new Pool({
   password: keys.pgPassword,
   port: keys.pgPort
 });
-pgClient.on('error', () => console.log('Lost PG connection'));
-
-pgClient
-  .query('CREATE TABLE IF NOT EXISTS values (number INT)')
-  .catch(err => console.log(err));
+//pgClient.on('error', () => console.log('Lost PG connection'));
+//pgClient
+//  .query('CREATE TABLE IF NOT EXISTS values (number INT)')
+//  .catch(err => console.log(err));
+//All the above 4 lines are replaced as part of the fix in section 15.249
+pgClient.on('connect', () => {
+  pgClient
+    .query('CREATE TABLE IF NOT EXISTS values (number INT)')
+    .catch((err) => console.log(err));
+});
 
 // Redis Client Setup
 const redis = require('redis');
@@ -66,5 +71,5 @@ app.post('/values', async (req, res) => {
 });
 
 app.listen(5000, err => {
-  console.log('Listening');
+  console.log('Server Listening on port 5000');
 });

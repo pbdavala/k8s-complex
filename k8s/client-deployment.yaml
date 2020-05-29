@@ -1,0 +1,21 @@
+# Note the apiVersion is apps/v1
+apiVersion: apps/v1
+#New config file of type Deployment
+kind: Deployment    
+metadata:
+  name: client-deployment
+spec:
+  replicas: 3    # No. of distinct identical pods this deployment will create
+  selector:      # Deployment's way of id-ing the pod's published label that belong to this deployment.
+    matchLabels:
+      component: web
+  template:     # pod-template config for every pod in this deployment
+    metadata:
+      labels:   # pod's label that is published for the sake of selector of deployment above. 
+        component: web
+    spec:       # spec for containers in the pod which is in this deployment.
+      containers:      # list of containers that we want created with every pod controlled by this deployment.
+      - name: client   # name of the container inside the pod
+        image: pdavala/multi-complex-client   # image for the container inside pod.         
+        ports:
+          - containerPort: 3000    # Port that is the multi-client image is listening on inside Dockerfile.

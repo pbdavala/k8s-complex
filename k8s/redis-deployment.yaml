@@ -1,0 +1,21 @@
+# Note the apiVersion is apps/v1
+apiVersion: apps/v1
+#New config file of type Deployment
+kind: Deployment    
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 1    # No. of distinct identical pods this deployment will create
+  selector:      # Deployment's way of id-ing the pod's published label that belong to this deployment.
+    matchLabels:
+      component: redis
+  template:     # pod-template config for every pod in this deployment
+    metadata:
+      labels:   # pod's label that is published for the sake of selector of deployment above. 
+        component: redis
+    spec:       # spec for redis container in the pod which is in this deployment.
+      containers:      # list of containers that we want created with every pod controlled by this deployment.
+      - name: redis   # name of the container inside the pod
+        image: redis   # std image for redis container inside pod.         
+        ports:
+          - containerPort: 6379   # Default port for redis

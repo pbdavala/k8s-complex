@@ -1,0 +1,11 @@
+apiVersion: v1
+#New config file of type PVC
+kind: PersistentVolumeClaim
+metadata:
+  name: database-persistent-volume-claim
+spec:       # If we attach this claim to a pod, k8s must find storage that meets this spec
+  accessModes:    # How nodes can access the volume specified by this spec.
+    - ReadWriteOnce   #  volume can be read/written by a single node at a time
+  resources:
+    requests:
+      storage: 2Gi    # the volume sourced by PVC should have exactly 2GB memory
