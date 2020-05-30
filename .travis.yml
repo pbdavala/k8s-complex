@@ -1,0 +1,19 @@
+# sudo access super user acess is required by travis 
+sudo: required
+
+# A copy of docker CLI is required
+services:
+  - docker
+
+# Before running the tests or deploy, below are required
+# 0. Add the encryped service-account.json (generated on google cloud) to this build so travis can access your GC.
+# 1. This will download the sdk from google cloud and install it on the instance assigned to us by travis CI
+# 2. It looks at the home dir of google cloud sdk installtion and apply the path.bash.inc config changes to travis via source cmd.
+# 3. Install the kubectl CLI from google cloud in our travis CI env. We will use this CLI inside travis to apply all our configs
+# 4. Authroize travis CI to access our GC account via the json file. This is eq. to IAM auth of AWS.
+before_install:
+  - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+  - curl https://sdk.cloud.google.com | bash > /dev/null; 
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update kubectl
+  - gcloud auth activate-service-account --key-file service-account.json
