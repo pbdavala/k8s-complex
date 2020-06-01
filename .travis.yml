@@ -5,15 +5,44 @@ sudo: required
 services:
   - docker
 
+env:
+  global:
+    - SHA=$(git rev-parse HEAD)  # The SHA id for every git commit. This is for tagging the images for the latest builds
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1   # To prevent gcloud cmds to prompt for y/n options while execution
+
 # Before running the tests or deploy, below are required
-# 0. Add the encryped service-account.json (generated on google cloud) to this build so travis can access your GC.
-# 1. This will download the sdk from google cloud and install it on the instance assigned to us by travis CI
-# 2. It looks at the home dir of google cloud sdk installtion and apply the path.bash.inc config changes to travis via source cmd.
-# 3. Install the kubectl CLI from google cloud in our travis CI env. We will use this CLI inside travis to apply all our configs
-# 4. Authroize travis CI to access our GC account via the json file. This is eq. to IAM auth of AWS.
+# 1. Add the encryped service-account.json (generated on google cloud) to this build so travis can access your GC.
+#    Once the above cmd runs, it decrypts the json file and places it in proj dir to be available for step 5 (gcloud auth..)
+# 2. This will download the sdk from google cloud and install it on the instance assigned to us by travis CI
+# 3. It looks at the home dir of google cloud sdk installtion and apply the path.bash.inc config changes to travis via source cmd.
+# 4. Install the kubectl CLI from google cloud in our travis CI env. We will use this CLI inside travis to apply all our configs
+# 5. Authroize travis CI to access our GC account via the decrypted json file from step 1. This is eq. to IAM auth of AWS.
+# 6. Specify to  GCloud CLI exactly what project FROM GC account that it has to pick. (arg = Project_id not proj_name)
+# 7. Specify to  GCloud CLI exactly what compute zone FROM kubernetes Engine inside GC account that it has to pick.
+# 8. Specify to  GCloud CLI exactly what k8s cluster FROM kubernetes Engine inside GC account that it has to pick. (arg=name of k8s cluster)
+# 9. Login to DOcker CLI. WE are running docker login cmd, and providing it the password via stdin. The env vars are to be pre-set
+#10. docker build the test version of k8s-complex image and run tests inside of it
 before_install:
   - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
   - curl https://sdk.cloud.google.com | bash > /dev/null; 
   - source $HOME/google-cloud-sdk/path.bash.inc
   - gcloud components update kubectl
   - gcloud auth activate-service-account --key-file service-account.json
+  - gcloud config set project k8s-complex-278711   # This and next 2 cmds to be run on GC kubectl as well
+  - gcloud config set compute/zone us-east1-d
+  - gcloud container clusters get-credentials k8s-complex-cluster
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker build -t pbdavala/k8s-react-test -f ./client/Dockerfile.dev ./client
+
+# Define the scripts to be run to test. Any non-zero exit code below is assumed by travis to be a failure.
+script:
+  - docker run -e CI=true pbdavala/k8s-react-test npm run test
+
+# Custom script for travis to build and deploy cuz, there is no built-in provider for k8s in travis.
+# instructing travis to run deploy.sh present at the root folder on master branch.
+deploy:
+  provider: script
+  script: bash ./deploy.sh
+  on:
+    branch: master
+  
