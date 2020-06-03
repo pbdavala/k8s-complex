@@ -1,0 +1,25 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: kodehub-ai-tls     # to be clear of the domain and cert type
+spec:
+  secretName: kodehub-ai
+  issuerRef: 
+    name: letsencrypt-prod  # From name in issuer.yaml config 
+    kind: ClusterIssuer     # From kind in issuer.yaml config 
+  # common name is on what's on the cert that is good for any address of kodehub.ai 
+  commonName: kodehub.ai    # Top Level Doman(TLD) is ai for kodehub.ai
+  # List of all domains that are valid for this cert.
+  dnsNames:
+    - kodehub.ai
+    - www.kodehub.ai
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:      # List of domains that the verification challenge is going to hit
+          - kodehub.ai
+          - www.kodehub.ai
+
+
+

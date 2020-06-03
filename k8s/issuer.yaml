@@ -1,0 +1,26 @@
+#Purpose of the issuer file is to describe to our cert-manager where it should go to get a cert.
+# https://cert-manager.io/docs/configuration/acme/
+apiVersion: cert-manager.io/v1alpha2
+
+#kind of object - ClusterIssuer
+kind: ClusterIssuer
+
+# cert-manager reaches out to the Issuer specified below.
+metadata:
+  name: letsencrypt-prod    #Cert Authority name or Issuer Name
+
+spec:
+  acme:
+    # Address for Cert-mgr to reach out to for verification process
+    server: https://acme-v02.api.letsencrypt.org/directory   # A link for letsencrypt API for hand shake
+    email: 'pavan@kodehub.ai'
+    privateKeySecretRef:  # Another secret sent by letsencrypt for comm. only. Not the k8s main cert secret.
+      name: letsencrypt-prod
+    # Add a single HTTP01 challenge solver,  using nginx. Once the challgenge is answered, cert is issued.
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+        
+
+
