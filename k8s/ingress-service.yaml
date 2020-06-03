@@ -7,9 +7,30 @@ metadata:
   annotations:               # additional higer level config options for this Ingress object
     kubernetes.io/ingress.class: nginx      # To tell k8s that we want ingress to be of nginx flavor.
     nginx.ingress.kubernetes.io/rewrite-target: /$1     #we will rewrite /api/xyz with /xyz only. $1=xyz
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"  # We are using letsencrypt issued cert
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'    # We are redirecting all http to https automatically
 spec:                       # Spec for this cluster
-  rules:                    # rules for this cluster
-    - http:
+  tls:                      # config for TLS/https
+    - hosts:
+        - kodehub.ai
+        - www.kodehub.ai
+      secretName: kodehub-ai  # spec:secretName from certificate.yaml
+  rules:                      # rules for this cluster
+    # following rules apply for kodehub.ai domain
+    - host: kodehub.ai        
+      http:
+        paths:
+          - path: /?(.*)       # Any path that is not /api = Path for multi-client pods cluster
+            backend:
+              serviceName: client-cluster-ip-service    # Name of the service from client-cluster-ip-service.yaml
+              servicePort: 3000                         # port on all pods can connect with client-cluster-ip-service:port
+          - path: /api/?(.*)   # Path with an uri of /api is for multi-server pods cluster
+            backend:
+              serviceName: server-cluster-ip-service    # Name of the service from server-cluster-ip-service.yaml
+              servicePort: 5000                         # port on all pods can connect with server-cluster-ip-service:port 
+    # following rules apply for www.kodehub.ai domain
+    - host: www.kodehub.ai        
+      http:
         paths:
           - path: /?(.*)       # Any path that is not /api = Path for multi-client pods cluster
             backend:
